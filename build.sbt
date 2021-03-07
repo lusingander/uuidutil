@@ -12,6 +12,10 @@ lazy val root = (project in file("."))
       "--no-server"
     ),
     nativeImageJvm := "graalvm",
+    nativeImageOptions ++= List(
+      // https://github.com/oracle/graal/issues/712
+      "--initialize-at-run-time=com.fasterxml.uuid.impl.RandomBasedGenerator$LazyRandom"
+    ),
     libraryDependencies ++= Seq(
       "com.github.scopt" %% "scopt" % "3.7.1",
       "com.lihaoyi" %% "ujson" % "1.1.0",
