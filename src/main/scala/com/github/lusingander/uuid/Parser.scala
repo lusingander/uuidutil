@@ -8,14 +8,27 @@ import scala.util.parsing.combinator.Parsers
 
 object Parser extends RegexParsers {
   private def hexDigit = "[0-9a-fA-F]".r
+
   private def repHex(n: Int) = repN(n, hexDigit) ^^ (_.mkString)
+
+  private def hex8 = repHex(8)
+  private def hex4 = repHex(4)
+  private def hex12 = repHex(12)
+
   private def withoutDash =
-    repHex(8) ~ repHex(4) ~ repHex(4) ~ repHex(4) ~ repHex(12) ^^ {
-      case (h1 ~ h2 ~ h3 ~ h4 ~ h5) => joinWithDash(h1, h2, h3, h4, h5)
+    hex8 ~ hex4 ~ hex4 ~ hex4 ~ hex12 ^^ { case (h1 ~ h2 ~ h3 ~ h4 ~ h5) =>
+      joinWithDash(h1, h2, h3, h4, h5)
     }
+
+  private def dash = "-"
   private def withDash =
-    "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}".r
+    hex8 ~ dash ~ hex4 ~ dash ~ hex4 ~ dash ~ hex4 ~ dash ~ hex12 ^^ {
+      case ((h1 ~ _ ~ h2 ~ _ ~ h3 ~ _ ~ h4 ~ _ ~ h5)) =>
+        joinWithDash(h1, h2, h3, h4, h5)
+    }
+
   private def joinWithDash(args: String*) = args.mkString("-")
+
   private def uuid = withoutDash | withDash
 
   def parse(in: String): Option[UUID] = parseAll(uuid, in) match {
