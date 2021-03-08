@@ -1,5 +1,5 @@
 ThisBuild / organization := "com.github.lusingander.uuid"
-ThisBuild / scalaVersion := "2.12.13"
+ThisBuild / scalaVersion := "2.13.5"
 
 lazy val root = (project in file("."))
   .enablePlugins(NativeImagePlugin)
@@ -23,5 +23,6 @@ lazy val root = (project in file("."))
       "org.scalatest" %% "scalatest" % "3.0.8" % Test,
       "com.fasterxml.uuid" % "java-uuid-generator" % "4.0.1"
     ),
-    Compile / mainClass := Some("com.github.lusingander.uuid.Main")
+    Compile / mainClass := Some("com.github.lusingander.uuid.Main"),
+    Global / excludeLintKeys := Set(nativeImageJvm)
   )
