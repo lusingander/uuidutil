@@ -7,15 +7,13 @@ lazy val root = (project in file("."))
     name := "uuidutil",
     version := "0.0.1",
     nativeImageOptions ++= List(
+      // https://github.com/oracle/graal/issues/712
+      "--initialize-at-run-time=com.fasterxml.uuid.impl.RandomBasedGenerator$LazyRandom",
       "--initialize-at-build-time",
       "--no-fallback",
       "--no-server"
     ),
     nativeImageJvm := "graalvm",
-    nativeImageOptions ++= List(
-      // https://github.com/oracle/graal/issues/712
-      "--initialize-at-run-time=com.fasterxml.uuid.impl.RandomBasedGenerator$LazyRandom"
-    ),
     libraryDependencies ++= Seq(
       "com.github.scopt" %% "scopt" % "3.7.1",
       "com.lihaoyi" %% "ujson" % "1.1.0",
