@@ -1,10 +1,14 @@
 package com.github.lusingander.uuid
 
-import scopt.OptionParser
-import scopt.OptionDef
+import scopt.OParser
 import scopt.Read
 
+sealed trait Mode
+case object Default extends Mode
+case object GenerateMode extends Mode
+
 case class Config(
+    mode: Mode = Default,
     number: Int = 1,
     timeBased: Boolean = false,
     randomBased: Boolean = true,
@@ -13,39 +17,63 @@ case class Config(
 )
 
 object Main extends App {
-  val parser = new OptionParser[Config]("uuidutil") {
-    opt[Int]('n', "number")
-      .optional()
-      .action((x, c) => c.copy(number = x))
-      .validateWith(_ >= 1, "number must not be less than 1")
-      .text("number to generate")
-    opt[Unit]('t', "time")
-      .action((x, c) => c.copy(timeBased = true))
-      .text("generate time based UUID")
-    opt[Unit]('r', "random")
-      .action((x, c) => c.copy(randomBased = true))
-      .text("generate random based UUID (default)")
-    opt[Unit]("dash")
-      .action((x, c) => c.copy(withDash = true))
-      .text("display UUID with dash")
-    opt[Unit]("upper")
-      .action((x, c) => c.copy(withUpper = true))
-      .text("display UUID with upper case")
-    help('h', "help")
-      .text("print help")
+
+  val builder = OParser.builder[Config]
+  import builder._
+
+  val uuidBaseParser = {
+    OParser.sequence(
+      opt[Unit]("dash")
+        .action((_, c) => c.copy(withDash = true))
+        .text("display UUID with dash"),
+      opt[Unit]("upper")
+        .action((_, c) => c.copy(withUpper = true))
+        .text("display UUID with upper case")
+    )
+  }
+  val uuidGenerateParser = {
+    OParser.sequence(
+      opt[Int]('n', "number")
+        .optional()
+        .action((x, c) => c.copy(number = x))
+        .validateWith(_ >= 1, "number must not be less than 1")
+        .text("number to generate"),
+      opt[Unit]('t', "time")
+        .action((_, c) => c.copy(timeBased = true))
+        .text("generate time based UUID"),
+      opt[Unit]('r', "random")
+        .action((_, c) => c.copy(randomBased = true))
+        .text("generate random based UUID (default)")
+    )
   }
 
-  parser.parse(args, Config()) match {
+  val parser = {
+    OParser.sequence(
+      programName("uuidutil"),
+      help('h', "help")
+        .text("print help"),
+      cmd("generate")
+        .action((_, c) => c.copy(mode = GenerateMode))
+        .children(uuidGenerateParser, uuidBaseParser)
+    )
+  }
+
+  OParser.parse(parser, args, Config()) match {
     case Some(config) =>
-      Generator(config.timeBased)
-        .generate(config.number, config.withDash, config.withUpper)
-        .foreach(println)
+      config.mode match {
+        case Default =>
+          println(OParser.usage(parser))
+        case GenerateMode =>
+          Generator(config.timeBased)
+            .generate(config.number, config.withDash, config.withUpper)
+            .foreach(println)
+      }
     case _ =>
       println("Failed to parse options")
   }
 
-  implicit class RichOptionDef[A: Read, C](val self: OptionDef[A, C]) {
-    def validateWith(pred: A => Boolean, error: String): OptionDef[A, C] =
+  implicit class RichOParser[A: Read, C](val self: OParser[A, C]) {
+    def validateWith(pred: A => Boolean, error: String): OParser[A, C] =
       self.validate(validator(pred, error))
   }
 
