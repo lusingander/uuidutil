@@ -7,7 +7,9 @@ import scopt.Read
 case class Config(
     number: Int = 1,
     timeBased: Boolean = false,
-    randomBased: Boolean = true
+    randomBased: Boolean = true,
+    withDash: Boolean = false,
+    withUpper: Boolean = false
 )
 
 object Main extends App {
@@ -23,13 +25,21 @@ object Main extends App {
     opt[Unit]('r', "random")
       .action((x, c) => c.copy(randomBased = true))
       .text("generate random based UUID (default)")
+    opt[Unit]("dash")
+      .action((x, c) => c.copy(withDash = true))
+      .text("display UUID with dash")
+    opt[Unit]("upper")
+      .action((x, c) => c.copy(withUpper = true))
+      .text("display UUID with upper case")
     help('h', "help")
       .text("print help")
   }
 
   parser.parse(args, Config()) match {
     case Some(config) =>
-      Generator(config.timeBased).generate(config.number).foreach(println)
+      Generator(config.timeBased)
+        .generate(config.number, config.withDash, config.withUpper)
+        .foreach(println)
     case _ =>
       println("Failed to parse options")
   }
