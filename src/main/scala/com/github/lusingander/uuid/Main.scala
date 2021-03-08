@@ -6,6 +6,7 @@ import scopt.Read
 sealed trait Mode
 case object Default extends Mode
 case object GenerateMode extends Mode
+case object FormatMode extends Mode
 
 case class Config(
     mode: Mode = Default,
@@ -52,9 +53,14 @@ object Main extends App {
       programName("uuidutil"),
       help('h', "help")
         .text("print help"),
+      note(""),
       cmd("generate")
         .action((_, c) => c.copy(mode = GenerateMode))
-        .children(uuidGenerateParser, uuidBaseParser)
+        .children(uuidGenerateParser, uuidBaseParser),
+      note(""),
+      cmd("format")
+        .action((_, c) => c.copy(mode = FormatMode))
+        .children(uuidBaseParser)
     )
   }
 
@@ -67,6 +73,12 @@ object Main extends App {
           Generator(config.timeBased)
             .generate(config.number, config.withDash, config.withUpper)
             .foreach(println)
+        case FormatMode =>
+          val parsed = Parser
+            .parse(io.StdIn.readLine())
+            .map(Formatter.format(_, config.withDash, config.withUpper))
+            .getOrElse("Failed to parse UUID")
+          println(parsed)
       }
     case _ =>
       println("Failed to parse options")

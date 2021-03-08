@@ -21,7 +21,8 @@ lazy val root = (project in file("."))
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "org.scalatest" %% "scalatest" % "3.0.8" % Test,
-      "com.fasterxml.uuid" % "java-uuid-generator" % "4.0.1"
+      "com.fasterxml.uuid" % "java-uuid-generator" % "4.0.1",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
     ),
     Compile / mainClass := Some("com.github.lusingander.uuid.Main"),
     Global / excludeLintKeys := Set(nativeImageJvm)
