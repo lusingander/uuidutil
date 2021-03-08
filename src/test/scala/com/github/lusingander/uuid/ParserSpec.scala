@@ -34,6 +34,11 @@ class ParserSpec extends FunSuite {
     assert(actual == expected)
   }
 
+  test("only some dashes exist") {
+    val actual = Parser.parse("1274ec6f-45904507b4ec-6f459015078c")
+    assert(actual == expected)
+  }
+
   test("empty") {
     val actual = Parser.parse("")
     assert(actual == None)
@@ -54,8 +59,8 @@ class ParserSpec extends FunSuite {
     assert(actual == None)
   }
 
-  test("invalid dash") {
-    val actual = Parser.parse("1274ec6f-45904507b4ec-6f459015078c")
+  test("dashes are replaced by hex digit") {
+    val actual = Parser.parse("1274ec6f-459004507fb4ec-6f459015078c")
     assert(actual == None)
   }
 }
