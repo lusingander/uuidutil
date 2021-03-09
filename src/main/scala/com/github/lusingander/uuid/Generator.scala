@@ -6,14 +6,8 @@ import com.fasterxml.uuid.NoArgGenerator
 
 trait Generator {
   def generator: NoArgGenerator
-  def generate(
-      number: Int,
-      withDash: Boolean = false,
-      withUpper: Boolean = false
-  ): Seq[String] =
-    (1 to number)
-      .map(_ => generator.generate())
-      .map(Formatter.format(_, withDash, withUpper))
+  def generate(number: Int): Seq[UUID] =
+    (1 to number).map(_ => generator.generate())
 }
 
 class TimeBasedGenerator() extends Generator {

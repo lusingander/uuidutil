@@ -71,7 +71,8 @@ object Main extends App {
           println(OParser.usage(parser))
         case GenerateMode =>
           Generator(config.timeBased)
-            .generate(config.number, config.withDash, config.withUpper)
+            .generate(config.number)
+            .map(Formatter.format(_, config.withDash, config.withUpper))
             .foreach(println)
         case FormatMode =>
           val parsed = Parser
